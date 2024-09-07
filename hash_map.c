@@ -1,3 +1,6 @@
+#ifndef HASH_MAP
+#define HASH_MAP
+
 #include <stdio.h>
 #include <string.h>
 
@@ -14,6 +17,7 @@ struct HashMap {
 
 int _hash_string(char* key) {
     int hash = 0;
+    // the worst hash function in existence xd
     for (int i = 0; i < strlen(key); i++) {
         hash += key[i];
     }
@@ -22,10 +26,8 @@ int _hash_string(char* key) {
 
 struct Vector* _hash_map_node(struct HashMap* self, char* key) {
     int index = _hash_string(key) % self->vec->len;
-    printf("index: %d\n", index);
 
     struct Vector* node = vector_index(self->vec, index);
-    printf("node: %d\n", node->len);
 
     return node;
 }
@@ -36,9 +38,6 @@ struct HashItem* _hash_map_get(struct HashMap* self, char* key) {
 
     for (int i = 0; i < node->len; i++) {
         struct HashItem* item = vector_index(node, i);
-
-        printf("comparing %s - %s\n", item->key, key);
-        printf("item: key:%s, value:%s", item->key, (char*)item->value);
 
         if (strcmp(item->key, key) == 0) {
             return item;
@@ -54,10 +53,10 @@ struct HashMap hash_map_new() {
         .vec = NULL,
     };
 
-    struct Vector* root = vector_new_heap(sizeof(struct Vector*));
+    struct Vector* root = vector_new_heap(sizeof(struct Vector));
 
     for (int i = 0; i < capacity; i++) {
-        struct Vector* node = vector_new_heap(sizeof(struct HashItem*));
+        struct Vector* node = vector_new_heap(sizeof(struct HashItem));
         vector_push(root, node);
         free(node);
     }
@@ -79,10 +78,8 @@ void hash_map_set(struct HashMap* self, char* key, void* value) {
     hash_item = malloc(sizeof(struct HashItem));
     hash_item->value = value;
     hash_item->key = key;
-    vector_push(node, hash_item);
 
-    printf("item has been pushed %s:%s\n", hash_item->key,
-           (char*)hash_item->value);
+    vector_push(node, hash_item);
 
     free(hash_item);
 }
@@ -96,3 +93,5 @@ void* hash_map_get(struct HashMap* self, char* key) {
 
     return item->value;
 }
+
+#endif

@@ -1,4 +1,3 @@
-#include "hash_map.c"
 #include <arpa/inet.h>
 #include <errno.h>
 #include <netinet/in.h>
@@ -6,6 +5,8 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
+
+#include "vector.c"
 
 int err() {
     printf("%s", strerror(errno));
@@ -17,16 +18,6 @@ int main() {
     if (socket_fd == -1) {
         return err();
     }
-
-    char* key = strdup("key");
-    char* value = strdup("value");
-
-    struct HashMap hash_map = hash_map_new();
-    hash_map_set(&hash_map, key, value);
-    char* value2 = hash_map_get(&hash_map, key);
-
-    printf("value: %s", value2);
-    return 0;
 
     printf("created %i socket\n", socket_fd);
 

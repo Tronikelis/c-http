@@ -1,3 +1,7 @@
+#ifndef VECTOR
+#define VECTOR
+
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -19,6 +23,11 @@ struct Vector vector_new(int item_size) {
 }
 
 void* vector_index(struct Vector* self, int index) {
+    if (index >= self->len || index < 0) {
+        printf("out of bounds index\n");
+        abort();
+    }
+
     return self->items + index * self->item_size;
 }
 
@@ -81,3 +90,5 @@ void vector_pop(struct Vector* self) {
         _vector_realloc(self);
     }
 }
+
+#endif
