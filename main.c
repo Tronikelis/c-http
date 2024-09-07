@@ -18,12 +18,12 @@ int main() {
         return err();
     }
 
-    char *key = strdup("key");
-    char *value = strdup("value");
+    char* key = strdup("key");
+    char* value = strdup("value");
 
     struct HashMap hash_map = hash_map_new();
     hash_map_set(&hash_map, key, value);
-    char *value2 = hash_map_get(&hash_map, key);
+    char* value2 = hash_map_get(&hash_map, key);
 
     printf("value: %s", value2);
     return 0;
@@ -36,7 +36,7 @@ int main() {
         {inet_addr("127.0.0.1")},
     };
 
-    if (bind(socket_fd, (struct sockaddr *)&sockaddr, sizeof(sockaddr)) == -1) {
+    if (bind(socket_fd, (struct sockaddr*)&sockaddr, sizeof(sockaddr)) == -1) {
         return err();
     }
 
@@ -53,7 +53,7 @@ int main() {
         socklen_t client_addr_size = sizeof(client_addr);
 
         int conn;
-        if ((conn = accept(socket_fd, (struct sockaddr *)&client_addr,
+        if ((conn = accept(socket_fd, (struct sockaddr*)&client_addr,
                            &client_addr_size)) == -1) {
             return err();
         }
@@ -61,7 +61,7 @@ int main() {
         struct Vector request = vector_new(sizeof(char));
 
         int bufsize = 256;
-        char *buf = malloc(bufsize);
+        char* buf = malloc(bufsize);
 
         int read_count;
         while ((read_count = read(conn, buf, bufsize)) != 0) {
@@ -74,7 +74,7 @@ int main() {
             }
 
             int len = request.len;
-            char *items = vector_items(&request);
+            char* items = vector_items(&request);
             // check for end \r\n\r\n
             if (len >= 4 && items[len - 1] == '\n' && items[len - 2] == '\r' &&
                 items[len - 3] == '\n' && items[len - 4] == '\r') {
@@ -84,10 +84,10 @@ int main() {
         free(buf);
 
         for (int i = 0; i < request.len; i++) {
-            printf("%c", ((char *)vector_items(&request))[i]);
+            printf("%c", ((char*)vector_items(&request))[i]);
         }
 
-        char *response = "HTTP/1.1 200 OK\r\nConnection: close\r\n\r\n";
+        char* response = "HTTP/1.1 200 OK\r\nConnection: close\r\n\r\n";
         if (write(conn, response, strlen(response)) == -1) {
             return err();
         }
