@@ -114,9 +114,10 @@ int main() {
             return err();
         }
 
-        close(conn);
         vector_free(&request);
         hash_map_free(&req_headers);
+
+        close(conn);
     }
 
     return 0;
