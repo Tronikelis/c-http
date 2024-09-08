@@ -52,6 +52,10 @@ void _vector_realloc_if_needed(struct Vector* self) {
     }
 }
 
+void* _vector_len_offset(struct Vector* self) {
+    return self->items + self->item_size * self->len;
+}
+
 // copies item memory
 void vector_push(struct Vector* self, void* item) {
     if (self->capacity == 0) {
@@ -66,13 +70,15 @@ void vector_push(struct Vector* self, void* item) {
         return;
     }
 
-    void* offset = self->items + self->item_size * self->len;
+    void* offset = _vector_len_offset(self);
     self->len++;
 
     // need bigger array
     if (self->len > self->capacity) {
         self->capacity *= 2;
         _vector_realloc(self);
+        // vector realloc changes self.items pointer
+        offset = _vector_len_offset(self) - self->item_size;
     }
 
     memcpy(offset, item, self->item_size);
