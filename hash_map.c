@@ -102,10 +102,25 @@ void hash_map_remove(struct HashMap* self, char* key) {
         struct HashItem* item = vector_index(node, i);
 
         if (strcmp(item->key, key) == 0) {
+            free(item->key);
+            free(item->value);
             vector_remove(node, i);
             return;
         }
     }
+}
+
+void hash_map_free(struct HashMap* self) {
+    for (int i = 0; i < self->vec->len; i++) {
+        struct Vector* node = vector_index(self->vec, i);
+
+        for (int j = 0; i < node->len; j++) {
+            struct HashItem* item = vector_index(node, j);
+            hash_map_remove(self, item->key);
+        }
+    }
+
+    vector_free(self->vec);
 }
 
 #endif

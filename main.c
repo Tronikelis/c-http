@@ -1,11 +1,13 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <netinet/in.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include "hash_map.c"
 #include "vector.c"
 
 int err() {
@@ -51,17 +53,17 @@ int main() {
 
         struct Vector request = vector_new(sizeof(char));
 
-        int bufsize = 256;
-        char* buf = malloc(bufsize);
+        char buf[256];
 
         int read_count;
-        while ((read_count = read(conn, buf, bufsize)) != 0) {
+        while ((read_count = read(conn, buf, sizeof(buf))) != 0) {
             if (read_count == -1) {
                 return err();
             }
 
             for (int i = 0; i < read_count; i++) {
-                vector_push(&request, buf + i * sizeof(char));
+                char* item = buf + i * sizeof(char);
+                vector_push(&request, item);
             }
 
             int len = request.len;
@@ -72,11 +74,40 @@ int main() {
                 break;
             }
         }
-        free(buf);
 
-        for (int i = 0; i < request.len; i++) {
-            printf("%c", ((char*)vector_items(&request))[i]);
+        char* request_as_str = strdup(request.items);
+        printf("request_as_str:%s\n", request_as_str);
+
+        struct HashMap req_headers = hash_map_new();
+
+        bool first = true;
+        for (char* token = strtok(request_as_str, "\r\n"); token != NULL;
+             token = strtok(NULL, "\r\n")) {
+
+            if (first) {
+                first = false;
+                continue;
+            }
+
+            token = strdup(token);
+            char* token_og = token;
+
+            printf("token: '%s'\n", token);
+
+            char* key = strdup(strsep(&token, ":"));
+            char* value = strdup(strsep(&token, ":"));
+
+            char* value_og = value;
+            value++;
+            value = strdup(value);
+            free(value_og);
+
+            hash_map_set(&req_headers, key, value);
+
+            free(token_og);
         }
+
+        free(request_as_str);
 
         char* response = "HTTP/1.1 200 OK\r\nConnection: close\r\n\r\n";
         if (write(conn, response, strlen(response)) == -1) {
@@ -84,6 +115,8 @@ int main() {
         }
 
         close(conn);
+        vector_free(&request);
+        hash_map_free(&req_headers);
     }
 
     return 0;

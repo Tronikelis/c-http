@@ -78,10 +78,10 @@ void vector_push(struct Vector* self, void* item) {
     memcpy(offset, item, self->item_size);
 }
 
-// don't forget to free items before this call
-void vector_clear(struct Vector* self) {
+void vector_free(struct Vector* self) {
     self->len = 0;
     self->capacity = 0;
+    free(self->items);
     self->items = NULL;
 }
 
