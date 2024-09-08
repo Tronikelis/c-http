@@ -45,6 +45,13 @@ void _vector_realloc(struct Vector* self) {
     self->items = realloc(self->items, self->capacity * self->item_size);
 }
 
+void _vector_realloc_if_needed(struct Vector* self) {
+    if (self->capacity / 2 >= self->len) {
+        self->capacity = self->len;
+        _vector_realloc(self);
+    }
+}
+
 // copies item memory
 void vector_push(struct Vector* self, void* item) {
     if (self->capacity == 0) {
@@ -78,17 +85,20 @@ void vector_clear(struct Vector* self) {
     self->items = NULL;
 }
 
-void vector_pop(struct Vector* self) {
-    if (self->len == 0) {
-        return;
+void vector_remove(struct Vector* self, int index) {
+    if (index != self->len - 1) {
+        for (int i = index + 1; i < self->len; i++) {
+            void* next = vector_index(self, i);
+            void* prev = vector_index(self, i - 1);
+            memcpy(prev, next, self->item_size);
+        }
     }
 
     self->len--;
 
-    if (self->capacity / 2 >= self->len) {
-        self->capacity = self->len;
-        _vector_realloc(self);
-    }
+    _vector_realloc_if_needed(self);
 }
+
+void vector_pop(struct Vector* self) { vector_remove(self, self->len - 1); }
 
 #endif

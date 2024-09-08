@@ -48,6 +48,7 @@ struct HashItem* _hash_map_get(struct HashMap* self, char* key) {
 }
 
 struct HashMap hash_map_new() {
+    // hashmap won't increase in capacity for now as that is complicated
     int capacity = 10;
     struct HashMap hash_map = {
         .vec = NULL,
@@ -92,6 +93,19 @@ void* hash_map_get(struct HashMap* self, char* key) {
     }
 
     return item->value;
+}
+
+void hash_map_remove(struct HashMap* self, char* key) {
+    struct Vector* node = _hash_map_node(self, key);
+
+    for (int i = 0; i < node->len; i++) {
+        struct HashItem* item = vector_index(node, i);
+
+        if (strcmp(item->key, key) == 0) {
+            vector_remove(node, i);
+            return;
+        }
+    }
 }
 
 #endif
