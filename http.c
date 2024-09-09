@@ -1,5 +1,4 @@
-#ifndef HTTP
-#define HTTP
+#pragma once
 
 #include <netinet/in.h>
 #include <stdbool.h>
@@ -233,5 +232,3 @@ int request_accept(int fd, struct sockaddr_in client_addr) {
 
     return 0;
 }
-
-#endif

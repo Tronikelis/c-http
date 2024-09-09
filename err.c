@@ -1,5 +1,4 @@
-#ifndef ERR
-#define ERR
+#pragma once
 
 #include <errno.h>
 #include <stdio.h>
@@ -9,5 +8,3 @@ int err() {
     printf("%s\n", strerror(errno));
     return 1;
 }
-
-#endif

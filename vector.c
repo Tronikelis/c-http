@@ -1,5 +1,4 @@
-#ifndef VECTOR
-#define VECTOR
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -106,5 +105,3 @@ void vector_remove(struct Vector* self, int index) {
 }
 
 void vector_pop(struct Vector* self) { vector_remove(self, self->len - 1); }
-
-#endif

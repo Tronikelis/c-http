@@ -1,5 +1,4 @@
-#ifndef HASH_MAP
-#define HASH_MAP
+#pragma once
 
 #include <stdio.h>
 #include <string.h>
@@ -122,5 +121,3 @@ void hash_map_free(struct HashMap* self) {
 
     vector_free(self->vec);
 }
-
-#endif
