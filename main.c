@@ -2,7 +2,7 @@
 #include "http_client.c"
 #include "vector.c"
 
-void get_root_handler(struct Request request) {}
+void get_root_handler(struct Request request, struct Response* response) {}
 
 int main() {
     struct HttpClient client = http_client_new();

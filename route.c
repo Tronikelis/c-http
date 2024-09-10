@@ -5,5 +5,5 @@
 struct Route {
     enum Method method;
     char* path;
-    void (*handler)(struct Request request);
+    void (*handler)(struct Request request, struct Response* response);
 };

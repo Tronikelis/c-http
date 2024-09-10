@@ -11,6 +11,7 @@ struct HashItem {
 };
 
 struct HashMap {
+    // Vector[] -> HashItem[]
     struct Vector* vec;
 };
 

@@ -49,7 +49,11 @@ int _http_client_accept(struct HttpClient* self, int fd,
 
     // todo find correct route for request
     struct Route* route = vector_index(self->routes, 0);
-    route->handler(request);
+    struct Response response = response_new();
+
+    route->handler(request, &response);
+    // todo: send response back to client here
+    response_free(&response);
 
     request_free(&request);
 

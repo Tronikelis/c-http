@@ -207,3 +207,58 @@ void request_free(struct Request* self) {
 
     hash_map_free(&self->headers);
 }
+
+enum HttpStatus {
+    OK = 200,
+    ServerError = 500,
+    BadRequest = 400,
+};
+
+struct Response {
+    char* body;
+    enum HttpStatus http_status;
+    struct HashMap headers;
+};
+
+struct Response response_new() {
+    struct Response response = {
+        .body = NULL,
+        .http_status = OK,
+        .headers = hash_map_new(),
+    };
+
+    return response;
+}
+
+void response_free(struct Response* self) {
+    if (self->body != NULL)
+        free(self->body);
+
+    hash_map_free(&self->headers);
+}
+
+char* response_gen(struct Response* self) {
+    char* version = "HTTP/1.1 ";
+    char* status;
+
+    if (self->http_status == OK) {
+        status = "200 OK";
+    } else if (self->http_status == BadRequest) {
+        status = "400 Bad Request";
+    } else if (self->http_status == ServerError) {
+        status = "500 Server Error";
+    } else {
+        status = "999 WTF";
+    }
+
+    struct Vector headers = vector_new(sizeof(char*));
+
+    for (int i = 0; i < self->headers.vec->len; i++) {
+        struct Vector* container = vector_index(self->headers.vec, i);
+
+        for (int j = 0; j < container->len; j++) {
+            struct HashItem* header_item = vector_index(container, j);
+            // push key: value to headers here
+        }
+    }
+}
