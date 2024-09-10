@@ -59,7 +59,7 @@ int request_parse_raw(struct Request* self) {
         }
 
         for (int i = 0; i < read_count; i++) {
-            vector_push(&raw, buf + i * sizeof(char));
+            vector_push(&raw, &buf[i]);
         }
 
         char* end = "\r\n\r\n";
