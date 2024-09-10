@@ -207,28 +207,3 @@ void request_free(struct Request* self) {
 
     hash_map_free(&self->headers);
 }
-
-int request_accept(int fd, struct sockaddr_in client_addr) {
-    struct Request request = request_new(fd);
-
-    if (request_parse_raw(&request) != 0) {
-        return err();
-    }
-    if (request_parse_method(&request) != 0) {
-        return err();
-    }
-    if (request_parse_path(&request) != 0) {
-        return err();
-    }
-    if (request_parse_headers(&request) != 0) {
-        return err();
-    }
-
-    if (request_send_response(&request) != 0) {
-        return err();
-    }
-
-    request_free(&request);
-
-    return 0;
-}

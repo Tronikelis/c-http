@@ -7,5 +7,3 @@ struct Route {
     char* path;
     void (*handler)(struct Request request);
 };
-
-struct HttpClient {};

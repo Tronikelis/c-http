@@ -1,56 +1,26 @@
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <sys/socket.h>
-#include <unistd.h>
-
-#include "err.c"
 #include "http.c"
+#include "http_client.c"
+#include "vector.c"
+
+void get_root_handler(struct Request request) {}
 
 int main() {
-    char* addr = "127.0.0.1";
-    int port = 3000;
+    struct HttpClient client = http_client_new();
 
-    int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (socket_fd == -1) {
-        return err();
-    }
+    struct Vector routes = vector_new(sizeof(struct Route));
 
-    printf("created %i socket\n", socket_fd);
-
-    struct sockaddr_in sockaddr = {
-        AF_INET,
-        htons(port),
-        {inet_addr(addr)},
+    struct Route get_root = {
+        .path = "/",
+        .method = GET,
+        .handler = &get_root_handler,
     };
+    vector_push(&routes, &get_root);
 
-    if (bind(socket_fd, (struct sockaddr*)&sockaddr, sizeof(sockaddr)) == -1) {
+    for (int i = 0; i < routes.len; i++) {
+        http_client_add(&client, vector_index(&routes, i));
+    }
+
+    if (http_client_listen(&client, "127.0.0.1", 3000) != 0) {
         return err();
     }
-
-    printf("bound to %d\n", socket_fd);
-
-    if (listen(socket_fd, 128) == -1) {
-        return err();
-    }
-
-    printf("listening on %s:%d\n", addr, port);
-
-    for (;;) {
-        struct sockaddr_in client_addr;
-        socklen_t client_addr_size = sizeof(client_addr);
-
-        int conn;
-        if ((conn = accept(socket_fd, (struct sockaddr*)&client_addr,
-                           &client_addr_size)) == -1) {
-            return err();
-        }
-
-        if (request_accept(conn, client_addr) != 0) {
-            return err();
-        }
-    }
-
-    return 0;
 }
