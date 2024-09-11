@@ -237,6 +237,15 @@ void response_free(struct Response* self) {
     hash_map_free(&self->headers);
 }
 
+void strcat_realloc(char** src, char* dest) {
+    int new_strlen = strlen(*src) + strlen(dest);
+
+    *src = realloc(*src, new_strlen + 1);
+    strcat(*src, dest);
+
+    *src[new_strlen] = '\0';
+}
+
 char* response_gen(struct Response* self) {
     char* version = "HTTP/1.1 ";
     char* status;
@@ -251,14 +260,35 @@ char* response_gen(struct Response* self) {
         status = "999 WTF";
     }
 
-    struct Vector headers = vector_new(sizeof(char*));
+    struct Vector lines = vector_new(sizeof(char*));
+    vector_push(&lines, &version);
+    vector_push(&lines, &status);
 
     for (int i = 0; i < self->headers.vec->len; i++) {
         struct Vector* container = vector_index(self->headers.vec, i);
 
         for (int j = 0; j < container->len; j++) {
             struct HashItem* header_item = vector_index(container, j);
-            // push key: value to headers here
+
+            char* header = NULL;
+
+            strcat_realloc(&header, header_item->key);
+            strcat_realloc(&header, ": ");
+            strcat_realloc(&header, header_item->value);
+
+            vector_push(&lines, &header);
         }
     }
+
+    char* response = NULL;
+
+    for (int i = 0; i < lines.len; i++) {
+        char** line_ptr = vector_index(&lines, i);
+        strcat_realloc(&response, *line_ptr);
+        strcat_realloc(&response, "\r\n");
+    }
+
+    strcat_realloc(&response, "\r\n");
+
+    return response;
 }
