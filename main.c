@@ -1,8 +1,13 @@
+#include "hash_map.c"
 #include "http.c"
 #include "http_client.c"
 #include "vector.c"
 
-void get_root_handler(struct Request request, struct Response* response) {}
+void get_root_handler(struct Request request, struct Response* response) {
+    response->http_status = OK;
+    hash_map_set(&response->headers, "Content-Type", "application/text");
+    hash_map_set(&response->headers, "Connection", "close");
+}
 
 int main() {
     struct HttpClient client = http_client_new();

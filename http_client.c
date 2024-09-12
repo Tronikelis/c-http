@@ -43,19 +43,21 @@ int _http_client_accept(struct HttpClient* self, int fd,
         return err();
     }
 
-    if (request_send_response(&request) != 0) {
-        return err();
-    }
-
     // todo find correct route for request
     struct Route* route = vector_index(self->routes, 0);
     struct Response response = response_new();
 
     route->handler(request, &response);
-    // todo: send response back to client here
-    response_free(&response);
+    char* raw = response_gen(&response);
 
+    if (write(fd, raw, strlen(raw)) == -1) {
+        return err();
+    }
+
+    response_free(&response);
     request_free(&request);
+    free(raw);
+    close(fd);
 
     return 0;
 }

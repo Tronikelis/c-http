@@ -19,7 +19,6 @@ enum Method {
 };
 
 struct Request {
-    bool is_closed;
     int fd;
     char* raw;
 
@@ -35,7 +34,6 @@ struct Request request_new(int fd) {
         .body = NULL,
         .raw = NULL,
         .path = NULL,
-        .is_closed = false,
         .fd = fd,
         .headers = hash_map_new(),
     };
@@ -44,11 +42,6 @@ struct Request request_new(int fd) {
 }
 
 int request_parse_raw(struct Request* self) {
-    if (self->is_closed) {
-        printf("trying to parse closed socket\n");
-        abort();
-    }
-
     struct Vector raw = vector_new(sizeof(char));
 
     char buf[256];
@@ -182,21 +175,6 @@ int request_parse_method(struct Request* self) {
     return 0;
 }
 
-int request_send_response(struct Request* self) {
-    self->is_closed = true;
-    // todo: free here all shits
-
-    char* response = "HTTP/1.1 200 OK\r\nConnection: close\r\n\r\n";
-    if (write(self->fd, response, strlen(response)) == -1) {
-        close(self->fd);
-        return err();
-    }
-
-    close(self->fd);
-
-    return 0;
-}
-
 void request_free(struct Request* self) {
     if (self->raw != NULL)
         free(self->raw);
@@ -237,32 +215,36 @@ void response_free(struct Response* self) {
     hash_map_free(&self->headers);
 }
 
-void strcat_realloc(char** src, char* dest) {
-    int new_strlen = strlen(*src) + strlen(dest);
-
-    *src = realloc(*src, new_strlen + 1);
-    strcat(*src, dest);
-
-    *src[new_strlen] = '\0';
+void strcat_realloc(char** dest, char* src) {
+    int new_strlen = strlen(src) + strlen(*dest);
+    *dest = realloc(*dest, new_strlen + 1);
+    strcat(*dest, src);
 }
 
 char* response_gen(struct Response* self) {
     char* version = "HTTP/1.1 ";
     char* status;
 
-    if (self->http_status == OK) {
+    switch (self->http_status) {
+    case OK:
         status = "200 OK";
-    } else if (self->http_status == BadRequest) {
+        break;
+    case BadRequest:
         status = "400 Bad Request";
-    } else if (self->http_status == ServerError) {
+        break;
+    case ServerError:
         status = "500 Server Error";
-    } else {
+        break;
+    default:
         status = "999 WTF";
     }
 
+    char* first_line = strdup("");
+    strcat_realloc(&first_line, version);
+    strcat_realloc(&first_line, status);
+
     struct Vector lines = vector_new(sizeof(char*));
-    vector_push(&lines, &version);
-    vector_push(&lines, &status);
+    vector_push(&lines, &first_line);
 
     for (int i = 0; i < self->headers.vec->len; i++) {
         struct Vector* container = vector_index(self->headers.vec, i);
@@ -270,7 +252,7 @@ char* response_gen(struct Response* self) {
         for (int j = 0; j < container->len; j++) {
             struct HashItem* header_item = vector_index(container, j);
 
-            char* header = NULL;
+            char* header = strdup("");
 
             strcat_realloc(&header, header_item->key);
             strcat_realloc(&header, ": ");
@@ -280,12 +262,13 @@ char* response_gen(struct Response* self) {
         }
     }
 
-    char* response = NULL;
+    char* response = strdup("");
 
     for (int i = 0; i < lines.len; i++) {
         char** line_ptr = vector_index(&lines, i);
         strcat_realloc(&response, *line_ptr);
         strcat_realloc(&response, "\r\n");
+        free(*line_ptr);
     }
 
     strcat_realloc(&response, "\r\n");
