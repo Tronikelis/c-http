@@ -118,6 +118,8 @@ void hash_map_free(struct HashMap* self) {
             struct HashItem* item = vector_index(node, j);
             hash_map_remove(self, item->key);
         }
+
+        vector_free(node);
     }
 
     vector_free(self->vec);
